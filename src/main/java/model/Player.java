@@ -18,43 +18,54 @@ public class Player {
     /** @param position starting position */
     public Player(Position position) { this.position = position; }
     /** @return current position */
-    public Position position() { return position; }
+    public Position position() {
+        // TODO: Implement position according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: position");
+    }
     /** @param position checked destination */
-    public void moveTo(Position position) { this.position = position; }
+    public void moveTo(Position position) {
+        // TODO: Implement moveTo according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: moveTo");
+    }
     /** @return remaining health */
-    public int health() { return health; }
+    public int health() {
+        // TODO: Implement health according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: health");
+    }
     /** @return attack including the equipped weapon bonus */
-    public int attack() { return baseAttack + (weaponEquipped ? 2 : 0); }
+    public int attack() {
+        // TODO: Implement attack according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: attack");
+    }
     /** @param amount incoming damage */
-    public void damage(int amount) { health = Math.max(0, health - Math.max(0, amount)); }
+    public void damage(int amount) {
+        // TODO: Implement damage according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: damage");
+    }
     /** @return immutable inventory snapshot */
-    public List<String> inventory() { return List.copyOf(inventory); }
+    public List<String> inventory() {
+        // TODO: Implement inventory according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: inventory");
+    }
     /** @param item item name
      * @return whether the item is held
      */
-    public boolean has(String item) { return inventory.contains(item); }
+    public boolean has(String item) {
+        // TODO: Implement has according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: has");
+    }
     /** @param item collected drop */
-    public void collect(String item) { inventory.add(item); }
+    public void collect(String item) {
+        // TODO: Implement collect according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: collect");
+    }
 
     /** Uses one herb, or equips a sword without stacking its bonus.
      * @param item item command argument
      * @return feedback
      */
     public String use(String item) {
-        if (item.equalsIgnoreCase("herb") || item.equalsIgnoreCase(HERB)) {
-            if (!has(HERB)) { return "You have no herb."; }
-            if (health == MAX_HEALTH) { return "Your health is already full. Herb kept."; }
-            int healed = Math.min(4, MAX_HEALTH - health);
-            health += healed;
-            inventory.remove(HERB);
-            return "You use a herb and restore " + healed + " health.";
-        }
-        if (item.equalsIgnoreCase("weapon") || item.equalsIgnoreCase(WEAPON)) {
-            if (!has(WEAPON)) { return "You have no weapon."; }
-            if (weaponEquipped) { return "Your sword is already equipped."; }
-            weaponEquipped = true;
-            return "Sword equipped. Attack increased by 2.";
-        }
-        return "Use herb or use weapon.";
+        // TODO: Implement use according to feature/game-skeleton.
+        throw new UnsupportedOperationException("TODO: use");
     }
 }

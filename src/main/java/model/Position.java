@@ -1,16 +1,17 @@
 package model;
 
-/** A zero-based column and row in the maze.
- * @param x column
- * @param y row
+/** A map coordinate.
+ * @param x zero-based column
+ * @param y zero-based row
  */
 public record Position(int x, int y) {
-    /** Returns a neighbouring position.
+    /** Calculates a neighbouring coordinate.
      * @param dx horizontal offset
      * @param dy vertical offset
-     * @return the offset position
+     * @return destination coordinate
      */
     public Position move(int dx, int dy) {
-        return new Position(x + dx, y + dy);
+        // TODO: Calculate the position without changing this coordinate.
+        throw new UnsupportedOperationException("TODO: calculate movement");
     }
 }
