@@ -39,6 +39,12 @@ public class GameEngine {
     /** @return whether play has ended */
     public boolean finished() { return won || quit || player.health() == 0; }
 
+    /** @return whether the current NPC has an unanswered riddle */
+    public boolean canAnswerRiddle() {
+        Npc npc = currentNpc();
+        return npc != null && npc.riddleOffered();
+    }
+
     /** Executes a player command.
      * @param input raw command
      * @return player feedback

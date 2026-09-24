@@ -11,6 +11,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jline:jline-terminal:3.30.6")
+    implementation("org.jline:jline-reader:3.30.6")
+    runtimeOnly("org.jline:jline-terminal-jni:3.30.6")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
