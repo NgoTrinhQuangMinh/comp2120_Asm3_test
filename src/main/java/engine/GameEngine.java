@@ -39,6 +39,19 @@ public class GameEngine {
                 .findFirst().orElse(null);
     }
 
+    /** Performs one exchange of attacks using both participants' stats.
+     * @return combat result
+     */
+    private String fight() {
+        Npc npc = currentNpc();
+        if (npc == null) { return "There is no NPC here to fight."; }
+        npc.hit(player.attack());
+        if (npc.resolved()) { return "You defeat the NPC. " + awardDrops(npc); }
+        player.damage(npc.attack());
+        if (player.health() == 0) { return "You have fallen. Game over."; }
+        return "You deal " + player.attack() + " damage. NPC has " + npc.health()
+                + " health and hits you for " + npc.attack() + ".";
+    }
 
 
 
