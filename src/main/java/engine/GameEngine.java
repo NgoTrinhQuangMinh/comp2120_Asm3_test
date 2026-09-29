@@ -32,6 +32,11 @@ public class GameEngine {
 
 
 
+    /** @return unresolved NPC on the current tile, or null */
+    private Npc currentNpc() {
+        return npcs.stream().filter(n -> !n.resolved() && n.position().equals(player.position()))
+                .findFirst().orElse(null);
+    }
 
 
 
