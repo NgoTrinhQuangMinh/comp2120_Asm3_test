@@ -1,5 +1,6 @@
 package engine;
 
+import command.Command;
 import config.NpcLoader;
 import java.util.List;
 import model.Npc;
@@ -11,6 +12,11 @@ import model.Position;
 public class GameEngine {
     public static final String KEY = Player.KEY;
     public static final String HERB = Player.HERB;
+    public static final String HELP = "Move: w/a/s/d or forward/left/backward/right\n"
+            + "Forward is up the map; backward is down.\n"
+            + "On N: fight (f), or talk (t) then answer <your answer>.\n"
+            + "Drops enter your inventory automatically. Use herb to heal; use weapon to equip.\n"
+            + "Other commands: inventory (i), look, help, quit (q).";
     private final Maze maze;
     private final Player player;
     private final List<Npc> npcs;
@@ -33,6 +39,30 @@ public class GameEngine {
     /** @return whether play has ended */
     public boolean finished() { return won || quit || player.health() == 0; }
 
+    /** Executes a player command.
+     * @param input raw command
+     * @return player feedback
+     */
+    public String execute(String input) {
+        if (finished()) { return "The game has ended."; }
+        String[] parts = input == null ? new String[0] : input.trim().split("\\s+", 2);
+        String argument = parts.length == 2 ? parts[1].trim() : "";
+        return switch (Command.parse(input)) {
+            case LEFT -> move(-1, 0);
+            case RIGHT -> move(1, 0);
+            case FORWARD -> move(0, -1);
+            case BACKWARD -> move(0, 1);
+            case FIGHT -> fight();
+            case TALK -> talk();
+            case ANSWER -> answer(argument);
+            case USE -> player.use(argument);
+            case INVENTORY -> "Inventory: " + (player.inventory().isEmpty() ? "empty" : String.join(", ", player.inventory()));
+            case HELP -> HELP;
+            case LOOK -> "Obtain the key from an NPC and reach the exit (X).";
+            case QUIT -> { quit = true; yield "Goodbye."; }
+            case UNKNOWN -> "Unknown command. Type help for controls.";
+        };
+    }
 
     /** Moves through walkable cells, checking the exit key.
      * @param dx horizontal offset
