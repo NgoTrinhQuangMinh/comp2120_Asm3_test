@@ -40,6 +40,14 @@ public class GameEngine {
     }
 
 
+    /** Offers the current NPC's riddle.
+     * @return dialogue
+     */
+    private String talk() {
+        Npc npc = currentNpc();
+        if (npc == null) { return "There is no NPC here to talk to."; }
+        return "NPC: " + npc.offerRiddle() + "\nType answer <your answer>.";
+    }
 
 
     /** Adds the resolved encounter's rewards to inventory.
