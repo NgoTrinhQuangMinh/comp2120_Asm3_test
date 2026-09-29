@@ -48,5 +48,14 @@ public class Npc {
 
 
 
+    /** Applies player damage.
+     * @param damage damage dealt
+     */
+    public void hit(int damage) {
+        health = Math.max(0, health - Math.max(0, damage));
+        if (health == 0) { resolve(); }
+    }
 
+    /** Ends the encounter so rewards cannot be claimed twice. */
+    public void resolve() { resolved = true; }
 }
