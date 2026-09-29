@@ -8,6 +8,7 @@ import model.Player;
 
 /** Minimal combat and riddle rules, independent of terminal input/output. */
 public class GameEngine {
+    public static final String HERB = Player.HERB;
     private final Maze maze;
     private final Player player;
     private final List<Npc> npcs;
@@ -41,5 +42,13 @@ public class GameEngine {
 
 
 
+    /** Adds the resolved encounter's rewards to inventory.
+     * @param npc resolved NPC
+     * @return reward description
+     */
+    private String awardDrops(Npc npc) {
+        npc.drops().forEach(player::collect);
+        return "Drops collected: " + String.join(", ", npc.drops()) + ".";
+    }
 
 }
