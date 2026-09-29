@@ -49,6 +49,19 @@ public class GameEngine {
         return "NPC: " + npc.offerRiddle() + "\nType answer <your answer>.";
     }
 
+    /** Checks an answer only against the NPC at the current tile.
+     * @param attempt player answer
+     * @return riddle outcome
+     */
+    private String answer(String attempt) {
+        Npc npc = currentNpc();
+        if (npc == null) { return "There is no NPC here to answer."; }
+        if (!npc.riddleOffered()) { return "Talk to the NPC to hear its riddle first."; }
+        if (attempt.isBlank()) { return "Type answer <your answer>."; }
+        if (!npc.accepts(attempt)) { return "NPC: Incorrect. Try again, or choose to fight."; }
+        npc.resolve();
+        return "NPC: Correct! " + awardDrops(npc);
+    }
 
     /** Adds the resolved encounter's rewards to inventory.
      * @param npc resolved NPC
