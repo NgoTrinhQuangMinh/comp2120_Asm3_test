@@ -46,7 +46,16 @@ public class Npc {
     /** @return whether the NPC has asked its riddle */
     public boolean riddleOffered() { return riddleOffered; }
 
+    /** Offers the riddle.
+     * @return the configured question
+     */
+    public String offerRiddle() { riddleOffered = true; return riddle; }
 
+    /** Checks an answer after the riddle has been offered.
+     * @param attempt player's answer
+     * @return whether it is correct
+     */
+    public boolean accepts(String attempt) { return riddleOffered && answer.equalsIgnoreCase(attempt.trim()); }
 
     /** Applies player damage.
      * @param damage damage dealt
