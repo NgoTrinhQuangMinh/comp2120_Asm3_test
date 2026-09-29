@@ -11,6 +11,8 @@ public class GameEngine {
     private final Maze maze;
     private final Player player;
     private final List<Npc> npcs;
+    private boolean won;
+    private boolean quit;
 
     /** Creates a fresh game from the map and NPC configuration.
      * @param maze maze to play
@@ -23,6 +25,10 @@ public class GameEngine {
 
     /** @return player state */
     public Player player() { return player; }
+    /** @return whether the player escaped */
+    public boolean won() { return won; }
+    /** @return whether play has ended */
+    public boolean finished() { return won || quit || player.health() == 0; }
 
 
 
