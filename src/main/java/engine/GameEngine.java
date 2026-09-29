@@ -5,9 +5,11 @@ import java.util.List;
 import model.Npc;
 import model.Maze;
 import model.Player;
+import model.Position;
 
 /** Minimal combat and riddle rules, independent of terminal input/output. */
 public class GameEngine {
+    public static final String KEY = Player.KEY;
     private final Maze maze;
     private final Player player;
     private final List<Npc> npcs;
@@ -31,6 +33,23 @@ public class GameEngine {
     public boolean finished() { return won || quit || player.health() == 0; }
 
 
+    /** Moves through walkable cells, checking the exit key.
+     * @param dx horizontal offset
+     * @param dy vertical offset
+     * @return movement feedback
+     */
+    private String move(int dx, int dy) {
+        Position next = player.position().move(dx, dy);
+        if (maze.isWall(next)) { return "A wall blocks your way."; }
+        if (maze.at(next) == 'X' && !player.has(KEY)) { return "The exit is locked. An NPC holds its key."; }
+        player.moveTo(next);
+        if (maze.at(next) == 'X') { won = true; return "You unlock the exit and escape the maze. You win!"; }
+        Npc npc = currentNpc();
+        if (npc != null) {
+            return "NPC: Health " + npc.health() + ", Attack " + npc.attack() + ". Choose fight or talk, or move away.";
+        }
+        return "You move through the maze.";
+    }
 
     /** @return unresolved NPC on the current tile, or null */
     private Npc currentNpc() {
