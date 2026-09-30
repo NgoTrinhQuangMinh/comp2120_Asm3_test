@@ -8,11 +8,21 @@ import model.Maze;
 
 /** Loads the small editable text map without external dependencies. */
 public final class MazeLoader {
-    /** Prevents utility-class construction. */
+    /**
+     * Prevents construction of the maze-loading utility.
+     *
+     * <p>Maze loading is accessed through the static loadDefault method.</p>
+     */
     private MazeLoader() { }
 
-    /** @return the bundled maze definition
-     * @throws IllegalStateException if the resource is missing or unreadable
+    /**
+     * Loads the bundled default maze from the classpath.
+     *
+     * <p>Reads /maze.txt as UTF-8, passes all lines to Maze validation, and closes the reader after loading. Each call creates a separate Maze instance.</p>
+     *
+     * @return a validated maze created from the bundled resource
+     * @throws IllegalStateException if the resource is missing or cannot be read
+     * @throws IllegalArgumentException if the resource contents fail Maze validation
      */
     public static Maze loadDefault() {
         var stream = MazeLoader.class.getResourceAsStream("/maze.txt");
