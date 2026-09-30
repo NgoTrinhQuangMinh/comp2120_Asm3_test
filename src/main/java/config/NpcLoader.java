@@ -12,12 +12,22 @@ import model.Player;
 
 /** Loads NPC stats, riddles, answers and drops from a properties file. */
 public final class NpcLoader {
-    /** Prevents utility construction. */
+    /**
+     * Prevents construction of the NPC-loading utility.
+     *
+     * <p>NPC creation is accessed through the static configuration-loading method.</p>
+     */
     private NpcLoader() { }
 
-    /** Creates fresh NPCs for the numbered map markers.
-     * @param maze map containing NPC markers 1-9
-     * @return fresh NPC instances
+    /**
+     * Creates fresh NPCs for the numbered markers in a maze.
+     *
+     * <p>Reads /npcs.properties as UTF-8, uses npc.&lt;marker&gt; properties, and maps herb, weapon and key reward tokens to stored item names. Repeated drops are retained. Each call creates new encounter state and closes its resource reader.</p>
+     *
+     * @param maze validated maze supplying the NPC markers and their coordinates
+     * @return NPCs in the maze marker scan order
+     * @throws IllegalStateException if the configuration resource is missing or cannot be read
+     * @throws IllegalArgumentException if required values, numeric stats, rewards or NPC model data are invalid
      */
     public static List<Npc> loadDefault(Maze maze) {
         var stream = NpcLoader.class.getResourceAsStream("/npcs.properties");
@@ -49,10 +59,15 @@ public final class NpcLoader {
         return npcs;
     }
 
-    /** Reads a required non-empty property.
-     * @param config configuration
-     * @param key property name
-     * @return trimmed value
+    /**
+     * Reads a mandatory non-blank configuration value.
+     *
+     * <p>Trims surrounding whitespace after checking that the property is present and contains non-whitespace text. The supplied Properties object is not modified.</p>
+     *
+     * @param config properties loaded from the NPC configuration
+     * @param key required property name
+     * @return the trimmed property value
+     * @throws IllegalArgumentException if the property is absent or blank
      */
     private static String required(Properties config, String key) {
         String value = config.getProperty(key);

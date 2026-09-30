@@ -8,18 +8,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Behaviour checks for NPC combat, riddles, and drops. */
 class GameEngineTest {
-    /** @return fresh game */
+    /**
+     * Creates an isolated game for a test scenario.
+     *
+     * <p>Loads the bundled maze and constructs fresh player and NPC state so one test cannot depend on another test's mutations.</p>
+     *
+     * @return a fresh engine using the bundled configuration
+     */
     private GameEngine newGame() { return new GameEngine(MazeLoader.loadDefault()); }
 
-    /** Executes movement or single-word commands.
-     * @param game game under test
-     * @param commands space-separated commands
+    /**
+     * Executes a sequence of single-token test commands.
+     *
+     * <p>Splits the supplied string on spaces and submits each token separately. Multi-word commands such as riddle answers must be sent directly to the engine instead.</p>
+     *
+     * @param game engine whose state is advanced by the sequence
+     * @param commands space-separated movement or other single-token commands
      */
     private void play(GameEngine game, String commands) {
         for (String command : commands.split(" ")) { game.execute(command); }
     }
 
-    /** Both wall types block movement and missing items cannot be used. */
+    /**
+     * Verifies that blocked movement and unavailable actions preserve state.
+     *
+     * <p>Exercises both wall behaviour and empty interactions, missing items, unknown commands and rendering expectations before checking an ordinary floor tile.</p>
+     */
     @Test
     void wallsAndEmptyInteractionsAreSafe() {
         GameEngine game = newGame();
@@ -38,7 +52,11 @@ class GameEngineTest {
         assertTrue(game.player().inventory().isEmpty());
     }
 
-    /** The exit is locked until a key is obtained. */
+    /**
+     * Verifies that reaching the exit without a key cannot win.
+     *
+     * <p>Follows a fixed route toward the exit and checks that the player remains on the preceding tile with the victory flag unset.</p>
+     */
     @Test
     void exitRequiresKey() {
         GameEngine game = newGame();
@@ -47,7 +65,11 @@ class GameEngineTest {
         assertFalse(game.won());
     }
 
-    /** Combat awards drops once, herbs heal, and the key permits escape. */
+    /**
+     * Verifies a complete combat, reward, healing and escape route.
+     *
+     * <p>Checks counterattack damage, one-time drops, herb consumption, successful keyed escape and the rejection of movement after victory.</p>
+     */
     @Test
     void combatRouteWinsAndHerbHeals() {
         GameEngine game = newGame();
@@ -68,7 +90,11 @@ class GameEngineTest {
         assertEquals(exit, game.player().position());
     }
 
-    /** Wrong answers give nothing; solving gives the same drops as combat. */
+    /**
+     * Verifies the peaceful route through an NPC riddle to the exit.
+     *
+     * <p>Checks premature, empty and incorrect answers, case-insensitive success, unchanged health, one-time rewards, retention of an unneeded herb and eventual victory.</p>
+     */
     @Test
     void riddleRouteWinsWithoutDamage() {
         GameEngine game = newGame();
@@ -91,7 +117,11 @@ class GameEngineTest {
         assertTrue(game.won());
     }
 
-    /** Each NPC has its own riddle; a weapon changes actual combat damage. */
+    /**
+     * Verifies NPC-specific answers and the effect of equipping a reward weapon.
+     *
+     * <p>Ensures the wrong NPC answer grants nothing, the correct encounter grants a sword, repeated equipment does not stack attack, and the increased attack affects later combat.</p>
+     */
     @Test
     void weaponDropIncreasesAttackOnce() {
         GameEngine game = newGame();
@@ -112,7 +142,11 @@ class GameEngineTest {
         assertTrue(game.player().has(Player.KEY));
     }
 
-    /** The second NPC's configured health and attack govern its combat. */
+    /**
+     * Verifies combat and rewards for the second configured NPC.
+     *
+     * <p>Checks its counterattack damage, the timing of its rewards, absence of the first NPC's key and healing after combat.</p>
+     */
     @Test
     void secondNpcCombatUsesConfiguredStats() {
         GameEngine game = newGame();
@@ -126,7 +160,11 @@ class GameEngineTest {
         assertEquals(8, game.player().health());
     }
 
-    /** Leaving an NPC prevents remote answers; quit ends play. */
+    /**
+     * Verifies that riddle answers cannot target an NPC remotely.
+     *
+     * <p>Offers a riddle, moves away, submits its answer and checks that nothing is awarded; also confirms quitting ends play without victory.</p>
+     */
     @Test
     void answersRequireCurrentNpc() {
         GameEngine game = newGame();
