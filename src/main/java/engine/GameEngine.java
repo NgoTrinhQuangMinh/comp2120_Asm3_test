@@ -14,8 +14,14 @@ public class GameEngine {
     private boolean won;
     private boolean quit;
 
-    /** Creates a fresh game from the map and NPC configuration.
-     * @param maze maze to play
+    /**
+     * Initialises a fresh game session for the supplied maze.
+     *
+     * <p>Creates the player at the P marker and loads fresh NPCs from the bundled configuration. The engine retains the supplied maze and owns the session's mutable player and NPC state.</p>
+     *
+     * @param maze validated maze containing the player start and numbered NPC markers
+     * @throws IllegalArgumentException if a required marker or NPC configuration value is invalid
+     * @throws IllegalStateException if the NPC resource cannot be loaded
      */
     public GameEngine(Maze maze) {
         this.maze = maze;
@@ -23,11 +29,29 @@ public class GameEngine {
         npcs = NpcLoader.loadDefault(maze);
     }
 
-    /** @return player state */
+    /**
+     * Exposes the current session's player model.
+     *
+     * <p>Returns the live mutable player rather than a copy; callers can inspect its state and must respect the model's ownership rules.</p>
+     *
+     * @return the player owned by this game session
+     */
     public Player player() { return player; }
-    /** @return whether the player escaped */
+    /**
+     * Reports whether the player has escaped successfully.
+     *
+     * <p>Quitting or losing all health does not by itself set the victory flag.</p>
+     *
+     * @return true once the engine has recorded a successful exit
+     */
     public boolean won() { return won; }
-    /** @return whether play has ended */
+    /**
+     * Checks whether the session has reached an end condition.
+     *
+     * <p>A recorded victory, a quit request or zero player health ends play. This query does not modify state.</p>
+     *
+     * @return true if the session was won, was quit, or the player has zero health
+     */
     public boolean finished() { return won || quit || player.health() == 0; }
 
 

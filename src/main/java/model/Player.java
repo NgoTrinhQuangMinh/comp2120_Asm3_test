@@ -15,30 +15,87 @@ public class Player {
     private boolean weaponEquipped;
     private final List<String> inventory = new ArrayList<>();
 
-    /** @param position starting position */
+    /**
+     * Creates a player at the supplied starting coordinate.
+     *
+     * <p>Initialises player state using the class field defaults. The constructor does not check whether the coordinate belongs to a maze or is walkable.</p>
+     *
+     * @param position initial player coordinate, normally the map start marker
+     */
     public Player(Position position) { this.position = position; }
-    /** @return current position */
+    /**
+     * Returns the player's current coordinate.
+     *
+     * <p>The immutable coordinate can be read without changing player state.</p>
+     *
+     * @return the position currently stored for the player
+     */
     public Position position() { return position; }
-    /** @param position checked destination */
+    /**
+     * Replaces the player's current coordinate.
+     *
+     * <p>Performs no collision, boundary or exit checks. The engine must validate the destination before applying the update.</p>
+     *
+     * @param position destination coordinate already checked by the caller
+     */
     public void moveTo(Position position) { this.position = position; }
-    /** @return remaining health */
+    /**
+     * Returns the player's remaining health.
+     *
+     * <p>Damage and healing operations update this value; reading it does not mutate player state.</p>
+     *
+     * @return the current health value, initially MAX_HEALTH
+     */
     public int health() { return health; }
-    /** @return attack including the equipped weapon bonus */
+    /**
+     * Calculates the damage of one player attack.
+     *
+     * <p>Adds the single weapon bonus when a sword has been equipped. Repeated equipment requests do not stack this bonus.</p>
+     *
+     * @return base attack plus 2 when equipped, otherwise base attack
+     */
     public int attack() { return baseAttack + (weaponEquipped ? 2 : 0); }
-    /** @param amount incoming damage */
+    /**
+     * Applies incoming damage to the player.
+     *
+     * <p>Negative amounts are treated as zero, and remaining health is clamped at zero. This operation does not itself print feedback or stop the game loop.</p>
+     *
+     * @param amount requested damage amount; negative values have no effect
+     */
     public void damage(int amount) { health = Math.max(0, health - Math.max(0, amount)); }
-    /** @return immutable inventory snapshot */
+    /**
+     * Returns an immutable snapshot of the player's items.
+     *
+     * <p>The snapshot preserves order and duplicate items. Later collection or consumption does not change a previously returned snapshot.</p>
+     *
+     * @return an immutable copy of the current inventory
+     */
     public List<String> inventory() { return List.copyOf(inventory); }
-    /** @param item item name
-     * @return whether the item is held
+    /**
+     * Checks whether the inventory contains an item name.
+     *
+     * <p>Uses exact string equality on stored names; command aliases and case-insensitive matching are handled by item-use parsing instead.</p>
+     *
+     * @param item stored item name to look up
+     * @return true if at least one matching item is held
      */
     public boolean has(String item) { return inventory.contains(item); }
-    /** @param item collected drop */
+    /**
+     * Adds one item entry to the inventory.
+     *
+     * <p>Preserves duplicate rewards and does not automatically consume or equip the item. The caller supplies a supported item name.</p>
+     *
+     * @param item item name to append to the inventory
+     */
     public void collect(String item) { inventory.add(item); }
 
-    /** Uses one herb, or equips a sword without stacking its bonus.
-     * @param item item command argument
-     * @return feedback
+    /**
+     * Attempts to consume a healing herb or equip a sword.
+     *
+     * <p>A herb heals up to four points without exceeding maximum health and is consumed only when healing occurs. A held sword grants one persistent attack bonus. Missing items, repeated equipment and unsupported names return feedback without applying the requested effect.</p>
+     *
+     * @param item non-null item name or supported alias; matching ignores case
+     * @return feedback describing the effect, missing item, or available choices
      */
     public String use(String item) {
         if (item.equalsIgnoreCase("herb") || item.equalsIgnoreCase(HERB)) {
