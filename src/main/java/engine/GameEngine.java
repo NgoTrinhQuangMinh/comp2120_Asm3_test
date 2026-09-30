@@ -23,8 +23,14 @@ public class GameEngine {
     private boolean won;
     private boolean quit;
 
-    /** Creates a fresh game from the map and NPC configuration.
-     * @param maze maze to play
+    /**
+     * Initialises a fresh game session for the supplied maze.
+     *
+     * <p>Creates the player at the P marker and loads fresh NPCs from the bundled configuration. The engine retains the supplied maze and owns the session's mutable player and NPC state.</p>
+     *
+     * @param maze validated maze containing the player start and numbered NPC markers
+     * @throws IllegalArgumentException if a required marker or NPC configuration value is invalid
+     * @throws IllegalStateException if the NPC resource cannot be loaded
      */
     public GameEngine(Maze maze) {
         this.maze = maze;
@@ -32,16 +38,38 @@ public class GameEngine {
         npcs = NpcLoader.loadDefault(maze);
     }
 
-    /** @return player state */
+    /**
+     * Exposes the current session's player model.
+     *
+     * <p>Returns the live mutable player rather than a copy; callers can inspect its state and must respect the model's ownership rules.</p>
+     *
+     * @return the player owned by this game session
+     */
     public Player player() { return player; }
-    /** @return whether the player escaped */
+    /**
+     * Reports whether the player has escaped successfully.
+     *
+     * <p>Quitting or losing all health does not by itself set the victory flag.</p>
+     *
+     * @return true once the engine has recorded a successful exit
+     */
     public boolean won() { return won; }
-    /** @return whether play has ended */
+    /**
+     * Checks whether the session has reached an end condition.
+     *
+     * <p>A recorded victory, a quit request or zero player health ends play. This query does not modify state.</p>
+     *
+     * @return true if the session was won, was quit, or the player has zero health
+     */
     public boolean finished() { return won || quit || player.health() == 0; }
 
-    /** Executes a player command.
-     * @param input raw command
-     * @return player feedback
+    /**
+     * Executes one command against the current game session.
+     *
+     * <p>Rejects further actions after the game has ended. Separates the first command token from the remaining argument, dispatches movement, encounters and item use, and returns feedback. Help, look and inventory are read-only; quit records the end of the session. No terminal input or output is performed here.</p>
+     *
+     * @param input raw command text with an optional argument; null is treated as unknown input
+     * @return feedback describing the result or why the input was rejected
      */
     public String execute(String input) {
         if (finished()) { return "The game has ended."; }
@@ -64,10 +92,14 @@ public class GameEngine {
         };
     }
 
-    /** Moves through walkable cells, checking the exit key.
-     * @param dx horizontal offset
-     * @param dy vertical offset
-     * @return movement feedback
+    /**
+     * Attempts to move the player by a coordinate offset.
+     *
+     * <p>Blocks walls, out-of-bounds destinations and the exit when no key is held. A permitted move updates position, records victory at the exit, or reports an active NPC's stats. Arrival alone does not start combat.</p>
+     *
+     * @param dx horizontal movement offset in columns
+     * @param dy vertical movement offset in rows
+     * @return movement, blocking, encounter or victory feedback
      */
     private String move(int dx, int dy) {
         Position next = player.position().move(dx, dy);
@@ -82,14 +114,24 @@ public class GameEngine {
         return "You move through the maze.";
     }
 
-    /** @return unresolved NPC on the current tile, or null */
+    /**
+     * Finds the active encounter on the player's current tile.
+     *
+     * <p>Searches the existing session collection and ignores resolved NPCs. Returning the same stored object preserves encounter progress when the player leaves and returns.</p>
+     *
+     * @return the first unresolved NPC at the player position, or null if none exists
+     */
     private Npc currentNpc() {
         return npcs.stream().filter(n -> !n.resolved() && n.position().equals(player.position()))
                 .findFirst().orElse(null);
     }
 
-    /** Performs one exchange of attacks using both participants' stats.
-     * @return combat result
+    /**
+     * Performs one player-first combat exchange.
+     *
+     * <p>Requires an active NPC at the player location. A defeated NPC grants rewards and does not counterattack; a surviving NPC damages the player. Reports player death or the remaining combat stats without reading terminal input.</p>
+     *
+     * @return feedback for an unavailable target, combat exchange, NPC defeat or player death
      */
     private String fight() {
         Npc npc = currentNpc();
@@ -102,8 +144,12 @@ public class GameEngine {
                 + " health and hits you for " + npc.attack() + ".";
     }
 
-    /** Offers the current NPC's riddle.
-     * @return dialogue
+    /**
+     * Offers the current active NPC's riddle.
+     *
+     * <p>Marks the riddle as offered and returns its text with answer instructions. Talking does not damage either participant or award items.</p>
+     *
+     * @return the riddle and instructions, or feedback when no active NPC is present
      */
     private String talk() {
         Npc npc = currentNpc();
@@ -111,9 +157,13 @@ public class GameEngine {
         return "NPC: " + npc.offerRiddle() + "\nType answer <your answer>.";
     }
 
-    /** Checks an answer only against the NPC at the current tile.
-     * @param attempt player answer
-     * @return riddle outcome
+    /**
+     * Checks a proposed answer for the current NPC encounter.
+     *
+     * <p>Requires a current unresolved NPC and an already offered riddle. Blank and incorrect attempts award nothing. A correct answer resolves that NPC before granting its configured drops, without combat damage.</p>
+     *
+     * @param attempt non-null answer text from command argument parsing
+     * @return feedback for an invalid target, missing question, unsuccessful attempt or successful resolution
      */
     private String answer(String attempt) {
         Npc npc = currentNpc();
@@ -125,17 +175,25 @@ public class GameEngine {
         return "NPC: Correct! " + awardDrops(npc);
     }
 
-    /** Adds the resolved encounter's rewards to inventory.
-     * @param npc resolved NPC
-     * @return reward description
+    /**
+     * Adds all rewards from an NPC to the player inventory.
+     *
+     * <p>Preserves configured order and duplicates and does not automatically use or equip items. The caller must ensure this is called only once for a completed encounter; this helper does not enforce that condition itself.</p>
+     *
+     * @param npc NPC whose configured drops are to be awarded
+     * @return feedback listing the collected item names
      */
     private String awardDrops(Npc npc) {
         npc.drops().forEach(player::collect);
         return "Drops collected: " + String.join(", ", npc.drops()) + ".";
     }
 
-    /** Draws the level and current stats.
-     * @return terminal-ready map
+    /**
+     * Builds a textual map and player-status display.
+     *
+     * <p>Overlays unresolved NPCs and the player on the stored maze, with the player taking precedence. Original start and numeric NPC markers appear as floor. Appends a legend, health, attack and key status without changing the session.</p>
+     *
+     * @return a multiline string ready for terminal display
      */
     public String render() {
         StringBuilder output = new StringBuilder();
