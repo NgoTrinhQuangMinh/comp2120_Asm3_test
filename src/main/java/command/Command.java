@@ -6,9 +6,13 @@ import java.util.Locale;
 public enum Command {
     LEFT, RIGHT, FORWARD, BACKWARD, FIGHT, TALK, ANSWER, USE, INVENTORY, HELP, LOOK, QUIT, UNKNOWN;
 
-    /** Parses a command or keyboard shortcut, ignoring case and surrounding spaces.
-     * @param input user input
-     * @return parsed command, or UNKNOWN
+    /**
+     * Converts the first input token into a supported command.
+     *
+     * <p>Ignores surrounding whitespace and letter case using the root locale. Recognises command aliases while leaving argument extraction to the engine. Null, blank and unsupported input map to UNKNOWN.</p>
+     *
+     * @param input raw player command, optionally followed by an argument; may be null
+     * @return the recognised action, or UNKNOWN
      */
     public static Command parse(String input) {
         if (input == null) { return UNKNOWN; }

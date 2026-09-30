@@ -8,7 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Validates the level resource and invalid map handling. */
 class MazeLoaderTest {
-    /** The shipped map contains the required markers. */
+    /**
+     * Verifies that bundled map and NPC resources load together.
+     *
+     * <p>Checks the start position, map boundaries, NPC marker, encounter count, configured stats and acceptance of an offered riddle answer.</p>
+     */
     @Test
     void loadsBundledMaze() {
         Maze maze = MazeLoader.loadDefault();
@@ -24,7 +28,11 @@ class MazeLoaderTest {
         assertTrue(npcs.get(0).accepts("clock"));
     }
 
-    /** Rejects maps that cannot support the skeleton's rules. */
+    /**
+     * Verifies that invalid map layouts are rejected.
+     *
+     * <p>Covers empty and non-rectangular maps, unsupported symbols, missing exits, duplicate starts and duplicate NPC markers using exception assertions.</p>
+     */
     @Test
     void rejectsMalformedMaps() {
         assertThrows(IllegalArgumentException.class, () -> new Maze(List.of()));
